@@ -170,7 +170,7 @@ void gen(Node *node) {
       break;
     case '/':
       printf("  cqo\n");
-      printf("idiv rdi\n");
+      printf("  idiv rdi\n");
   }
   printf("  push rax\n");
 }
