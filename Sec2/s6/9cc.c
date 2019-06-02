@@ -298,50 +298,6 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_EQ || node->ty == ND_NE \
-      || node->ty == ND_GE || node->ty == ND_GT \
-      || node->ty == ND_LE || node->ty == ND_LT) {
-    gen(node->lhs);
-    gen(node->rhs);
-
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
-
-    switch(node->ty) {
-      case ND_EQ:
-        printf("  cmp rax, rdi\n");
-        printf("  sete al\n");
-        printf("  movzb rax, al\n");
-        break;
-      case ND_NE:
-        printf("  cmp rax, rdi\n");
-        printf("  setne al\n");
-        printf("  movzb rax, al\n");
-        break;
-      case ND_LE:
-        printf("  cmp rax, rdi\n");
-        printf("  setle al\n");
-        printf("  movzb rax, al\n");
-        break;
-      case ND_LT:
-        printf("  cmp rax, rdi\n");
-        printf("  setl  al\n");
-        printf("  movzb rax, al\n");
-        break;
-      case ND_GE:
-        printf("  cmp rdi, rax\n");
-        printf("  setle al\n");
-        printf("  movzb rax, al\n");
-        break;
-      case ND_GT:
-        printf("  cmp rdi, rax\n");
-        printf("  setl al\n");
-        printf("  movzb rax, al\n");
-    }
-    printf("  push rax\n");
-    return;
-  }
-
   gen(node->lhs);
   gen(node->rhs);
 
@@ -361,6 +317,35 @@ void gen(Node *node) {
     case '/':
       printf("  cqo\n");
       printf("  idiv rdi\n");
+    case ND_EQ:
+      printf("  cmp rax, rdi\n");
+      printf("  sete al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_NE:
+      printf("  cmp rax, rdi\n");
+      printf("  setne al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_LE:
+      printf("  cmp rax, rdi\n");
+      printf("  setle al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_LT:
+      printf("  cmp rax, rdi\n");
+      printf("  setl  al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_GE:
+      printf("  cmp rdi, rax\n");
+      printf("  setle al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case ND_GT:
+      printf("  cmp rdi, rax\n");
+      printf("  setl al\n");
+      printf("  movzb rax, al\n");
   }
   printf("  push rax\n");
 }
@@ -393,9 +378,6 @@ int main(int argc, char **argv) {
 
   // output results
   printf("  pop rax\n");
-
-  if (argv[1] == "-test") {
-    runtest();
-  }
+  printf("  ret\n");
   return 0;
 }
