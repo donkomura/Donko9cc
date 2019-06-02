@@ -15,6 +15,12 @@ enum {
 };
 
 typedef struct {
+  void **data;
+  int capacity;  // buffer allocated area
+  int len;       // elements count
+} Vector;
+
+typedef struct {
   int ty;       // トークンの型
   int val;      // tyがND_NUMの場合その数値
   char *input;  // トークン文字列(error)
@@ -27,7 +33,7 @@ typedef struct Node {
   int val;          // tyがND_NUMのときの数値
 } Node;
 
-// 使用関数
+// generate assembly functions
 Node *expr();
 Node *equality();
 Node *relational();
@@ -36,14 +42,42 @@ Node *mul();
 Node *unary();
 Node *term();
 void gen(Node *node);
+Vector *new_vector();
+void vec_push(Vector *vec, void *elem);
 
+
+// test code for Vector --------------------------------
+int expect(int line, int expected, int actual) {
+  if (expected == actual) 
+    return;
+  fprintf(stderr, "%d: %d expected, but god %d\n", 
+      line, expected, actual);
+  exit(1);
+}
+
+void runtest() {
+  Vector *vec = new_vector();
+  expect(__LINE__, 0, vec->len);
+
+  for (int i = 0; i < 100; i++) 
+    vec_push(vec, (void *)i);
+  
+  expect(__LINE__, 100, vec->len);
+  expect(__LINE__, 0,   (long)vec->data[0]);
+  expect(__LINE__, 50,  (long)vec->data[50]);
+  expect(__LINE__, 99,  (long)vec->data[99]);
+
+  printf("OK\n");
+}
+// -----------------------------------------------------
+
+Token tokens[100];
 
 char *user_input;  // 引数でとったトークン列
 
-Token tokens[200];
-
 int pos = 0;       // tokensのイテレータ
 
+// arert functions
 void error(char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -52,6 +86,7 @@ void error(char *fmt, ...) {
   exit(1);
 }
 
+// pointing error
 void error_at(char *loc, char *msg) {
   int posit = loc - user_input;
   fprintf(stderr, "%s\n", user_input);
@@ -60,8 +95,26 @@ void error_at(char *loc, char *msg) {
   exit(1);
 }
 
-// トークンの分割
-// tokensに保存
+// create new vector 
+Vector *new_vector() {
+  Vector *vec = malloc(sizeof(Vector));
+  vec->data = malloc(sizeof(void *) * 16);
+  vec->capacity = 16;
+  vec->len = 0;
+  return vec;
+}
+
+// push back vector element
+void vec_push(Vector *vec, void *elem) {
+  if (vec->capacity == vec->len) {
+    vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
+  }
+  vec->data[vec->len++] = elem;
+}
+
+// split token
+// save tokens at [tokens]
 void tokenize(char *p) {
   int i = 0;
   while (*p) {
@@ -151,7 +204,7 @@ int consume(int ty) {
   return 1;
 }
 
-// 抽象構文木のパーサー
+// parser abstract syntax tree
 Node *expr() {
   return equality();
 }
@@ -238,6 +291,7 @@ Node *term() {
   error_at(tokens[pos].input, "invalid tokens");
 }
 
+// generate assembly
 void gen(Node *node) {
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
@@ -312,28 +366,36 @@ void gen(Node *node) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
+  if (argc!= 2) {
     fprintf(stderr, "invalid input.\n");
     return 1;
   }
-  
+
+  if (strcmp(argv[1], "-test") == 0) {
+    runtest();
+    return 0;
+  }
+
   user_input = argv[1];
 
   // tokenize
-  tokenize(argv[1]);
+  tokenize(user_input);
   
-  // 抽象構文木の構築
+  // build abstract syntax tree
   Node *root = expr();
   
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 
-  // 抽象構文木からコード生成
+  // generate assembly
   gen(root);
 
-  // スタックの先頭から計算結果を出力
+  // output results
   printf("  pop rax\n");
-  printf("  ret\n");
+
+  if (argv[1] == "-test") {
+    runtest();
+  }
   return 0;
 }
