@@ -45,6 +45,8 @@ void gen(Node *node);
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
 
+int pos;
+char *user_input;
 
 // test code for Vector --------------------------------
 int expect(int line, int expected, int actual) {
@@ -71,9 +73,7 @@ void runtest() {
 }
 // -----------------------------------------------------
 
-Token tokens[100];
-
-char *user_input;  // 引数でとったトークン列
+Vector *tokens;
 
 int pos = 0;       // tokensのイテレータ
 
@@ -118,6 +118,8 @@ void vec_push(Vector *vec, void *elem) {
 void tokenize(char *p) {
   int i = 0;
   while (*p) {
+    Token *token = malloc(sizeof(Token));
+
     if (isspace(*p)) {
       p++;
       continue;
@@ -126,12 +128,12 @@ void tokenize(char *p) {
     if (strchr("+-*/>=<()!", *p)) {
       if ((*p == '=' || *p == '!') && *(p + 1) == '=') {
         if (*p == '=') {
-          tokens[i].ty = ND_EQ;
+          token->ty = ND_EQ;
         } else {
-          tokens[i].ty = ND_NE;
+          token->ty = ND_NE;
         }
-        tokens[i].input = p;
-        i++;
+        token->input = p;
+        vec_push(tokens, token);
         p += 2;
         continue;
       }
@@ -139,47 +141,47 @@ void tokenize(char *p) {
       if ((*p == '<' || *p == '>')) {
         if (*p == '<') {
           if (*(p + 1) == '=') {
-            tokens[i].ty = ND_LE;
-            i++;
+            token->ty = ND_LE;
             p += 2;
           } else {
-            tokens[i].ty = ND_LT;
-            i++;
+            token->ty = ND_LT;
             p++;
           }
         } else {
           if (*(p + 1) == '=') {
-            tokens[i].ty = ND_GE;
-            i++;
+            token->ty = ND_GE;
             p += 2;
           } else {
-            tokens[i].ty = ND_GT;
-            i++;
+            token->ty = ND_GT;
             p++;
           }
         }
-        tokens[i].input = p;
+        token->input = p;
+        vec_push(tokens, token);
         continue;
       }
 
-      tokens[i].ty = *p;
-      tokens[i].input = p;
-      i++;
+      token->ty = *p;
+      token->input = p;
+      vec_push(tokens, token);
       p++;
       continue;
     }
 
     if (isdigit(*p)) {
-      tokens[i].ty = ND_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
+      token->ty = ND_NUM;
+      token->input = p;
+      token->val = strtol(p, &p, 10);
+      vec_push(tokens, token);
       continue;
     }
 
     error_at(p, "Could not tokenize.");
   }
-  tokens[i].input = p;
+
+  Token *token = malloc(sizeof(Token));
+  token->input = p;
+  vec_push(tokens, token);
 }
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
@@ -198,7 +200,8 @@ Node *new_node_num(int ty) {
 }
 
 int consume(int ty) {
-  if (tokens[pos].ty != ty) 
+  Token *token = tokens->data[pos]; 
+  if (token->ty != ty) 
     return 0;
   pos++;
   return 1;
@@ -278,17 +281,21 @@ Node *unary() {
 }
 
 Node *term() {
+  Token *token = tokens->data[pos];
   if (consume('(')) {
     Node *node = expr();
     if (!consume(')')) {
-      error_at(tokens[pos].input, "invalid syntax: no ')'");
+      error_at(token->input, "invalid syntax: no ')'");
     }
     return node;
   }
 
-  if (tokens[pos].ty == ND_NUM)
-    return new_node_num(tokens[pos++].val);
-  error_at(tokens[pos].input, "invalid tokens");
+  if (token->ty == ND_NUM) {
+    token = tokens->data[pos++];
+    return new_node_num(token->val);
+  }
+  token = tokens->data[pos++];
+  error_at(token->input, "invalid tokens");
 }
 
 // generate assembly
@@ -361,10 +368,12 @@ int main(int argc, char **argv) {
     return 0;
   }
 
+  tokens = new_vector();
+  
   user_input = argv[1];
 
   // tokenize
-  tokenize(user_input);
+  tokenize(argv[1]);
   
   // build abstract syntax tree
   Node *root = expr();
