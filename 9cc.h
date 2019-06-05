@@ -8,7 +8,7 @@
 
 enum {
   TK_NUM = 256, // numeric token
-  TK_INDENT,    // operator token
+  TK_IDENT,    // operator token
   TK_EOF,       // end token
   TK_EQ,        // ==
   TK_NE,        // != 
@@ -21,7 +21,7 @@ enum {
 
 enum {
   ND_NUM = 256, // node type of numeric
-  ND_INDENT,    // node type of operator
+  ND_IDENT,    // node type of operator
   ND_EQ,        // ==
   ND_NE,        // != 
   ND_LE,        // <=
@@ -35,7 +35,7 @@ typedef struct {
   int ty;       // token type
   int val;      // Numeric token
   char *input;  // error point (for error message)
-  char name;    // variable name
+  char *name;   // variable name
 } Token;
 
 // tokenize input expression
@@ -47,12 +47,12 @@ typedef struct Node {
   struct Node *lhs; // left hand side node
   struct Node *rhs; // right hand side node
   int val;          // the value of this node (ND_NUM)
-  char name;        // use in case ty == ND_INDNET
+  char *name;        // use in case ty == ND_INDNET
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int ty);
-Node *new_node_indent(int ty);
+Node *new_node_indent(char *name);
 int consume(int ty);
 
 // generate assembly functions
@@ -79,6 +79,15 @@ typedef struct {
 Vector *new_vector(); // create new vector
 void vec_push(Vector *vec, void *elem); // push back in vector
 
+typedef struct {
+  Vector *keys;
+  Vector *vals;
+} Map;
+
+Map *new_map();
+void map_set(Map *map, char *key, void *val);
+void *map_get(Map *map, char *key);
+
 // error functions
 void error(char *fmt, ...); // error output
 void error_at(char *loc, char *msg); // error output with error point in input expression
@@ -86,7 +95,10 @@ void error_at(char *loc, char *msg); // error output with error point in input e
 // test function
 int expect(int line, int expected, int actual);
 void runtest();
+void test_vector();
+void test_map();
 
 Vector *tokens;
 Vector *code;
-int pos, code_pos;
+Map *map;
+int pos, code_pos, offset_count;

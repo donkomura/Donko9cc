@@ -16,8 +16,9 @@ try() {
   fi 
 }
 
-try 7 "a = 4; b = 3; return (a + b);"
+try 7 "HOGE____64 = 4; pue=3; return HOGE____64+pue;"
 try 4 "return 8 / 2;"
-try 25 "a = 3; b = 5 * 6 - 8; return a + b;"
+try 14 "aaaa = 3; bbbbb = 5 * 6 - 8; return aaaa + bbbbb / 2;"
+try 1 "a = 1; b = 2; c = 3; d = 4; e = 5; return a * b / c + e - d;"
 
 echo ok

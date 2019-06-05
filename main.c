@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
 
   tokens = new_vector();
   code = new_vector();
+  map = new_map();
 
   user_input = argv[1];
   

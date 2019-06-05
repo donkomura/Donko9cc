@@ -2,7 +2,7 @@
 
 char *user_input;
 
-// test code for Vector --------------------------------
+// test code for component functions --------------------------------
 int expect(int line, int expected, int actual) {
   if (expected == actual) 
     return;
@@ -11,7 +11,7 @@ int expect(int line, int expected, int actual) {
   exit(1);
 }
 
-void runtest() {
+void test_vector() {
   Vector *vec = new_vector();
   expect(__LINE__, 0, vec->len);
 
@@ -25,7 +25,27 @@ void runtest() {
 
   printf("OK\n");
 }
-// -----------------------------------------------------
+
+void test_map() {
+  Map *map = new_map();
+  expect(__LINE__, 0, (long)map_get(map, "hoge"));
+  
+  map_set(map, "hoge", (void *)2);
+  expect(__LINE__, 2, (long)map_get(map, "hoge"));
+
+  map_set(map, "pue", (void *)4);
+  expect(__LINE__, 4, (long)map_get(map, "pue"));
+
+  map_set(map, "hoge", (void *)8);
+  expect(__LINE__, 8, (long)map_get(map, "hoge"));
+  return;
+}
+
+void runtest() {
+  test_vector();
+  test_map();
+}
+// ------------------------------------------------------------------
 
 // arert functions
 void error(char *fmt, ...) {
@@ -71,3 +91,26 @@ int is_alnum(char c) {
          (c == '_');
 }
 
+// create new map
+Map *new_map() {
+  Map *map = malloc(sizeof(Map));
+  map->keys = new_vector();
+  map->vals = new_vector();
+  return map;
+}
+
+// set key-value
+void map_set(Map *map, char *key, void *val) {
+  vec_push(map->keys, key);
+  vec_push(map->vals, val);
+  return;
+}
+
+// get value
+void *map_get(Map *map, char *key) {
+  for (int i = map->keys->len - 1; i >= 0; i--) {
+    if (strcmp(map->keys->data[i], key) == 0)
+      return map->vals->data[i];
+  }
+  return NULL;
+}

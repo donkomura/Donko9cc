@@ -18,12 +18,14 @@ void tokenize(char *p) {
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z') {
-      token->ty = TK_INDENT;
-      token->name = *p;
+    if (('A' <= *p && *p <= 'Z') || (*p == '_') || ('a' <= *p && *p <= 'z')) {
+      int cnt = 1;
+      while (isalpha(p[cnt]) || isdigit(p[cnt]) || p[cnt] == '_') cnt++;
+      token->ty = TK_IDENT;
+      token->name = strndup(p, cnt);
       token->input = p;
       vec_push(tokens, token);
-      p++;
+      p += cnt;
       continue;
     }
 

@@ -15,10 +15,11 @@ Node *new_node_num(int ty) {
   return node;
 }
 
-Node *new_node_indent(int name) {
+Node *new_node_indent(char *name) {
   Node *node = malloc(sizeof(Node));
-  node->ty = ND_INDENT;
+  node->ty = ND_IDENT;
   node->name = name;
+  map_set(map, name, (void *)offset_count++); 
   return node;
 }
 
@@ -153,7 +154,7 @@ Node *term() {
     return new_node_num(token->val);
   }
 
-  if (token->ty == TK_INDENT) {
+  if (token->ty == TK_IDENT) {
     token = tokens->data[pos++];
     return new_node_indent(token->name);
   }
@@ -163,10 +164,10 @@ Node *term() {
 }
 
 void gen_lval(Node *node) {
-  if (node->ty != ND_INDENT) {
+  if (node->ty != ND_IDENT) {
     error("left hand side value is not valiable.");
   }
-  int offset = ('z' - node->name + 1) * 8; 
+  int offset = (int)map_get(map, node->name) * 8; 
   printf("  mov rax, rbp\n");
   printf("  sub rax, %d\n", offset);
   printf("  push rax\n");
@@ -179,7 +180,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_INDENT) {
+  if (node->ty == ND_IDENT) {
     gen_lval(node);
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");
