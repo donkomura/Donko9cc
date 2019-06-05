@@ -15,26 +15,60 @@ Node *new_node_num(int ty) {
   return node;
 }
 
+Node *new_node_indent(int name) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_INDENT;
+  node->name = name;
+  return node;
+}
+
 int consume(int ty) {
   Token *token = tokens->data[pos]; 
-  if (token->ty != ty) 
+  if (token->ty != ty)
     return 0;
   pos++;
   return 1;
 }
 
 // parser abstract syntax tree
+void program() {
+  Token *token = tokens->data[pos];
+  
+  if (token->ty == TK_EOF) 
+    return; 
+  Node *node = stmt();
+  vec_push(code, node);
+  code_pos++;
+  code->data[code_pos] = NULL;
+  return program();
+}
+
+Node *stmt() {
+  Node *node = expr();
+  Token *token = tokens->data[pos];
+  if (!consume(';'))
+    error_at(token->input, "This token may be ';'");
+  return node;
+}
+
 Node *expr() {
-  return equality();
+  return assign();
+}
+
+Node *assign() {
+  Node *node = equality();
+  if (consume('='))
+    node = new_node('=', node, assign());
+  return node;
 }
 
 Node *equality() {
   Node *node = relational();
 
   for (;;) {
-    if (consume(ND_EQ))
+    if (consume(TK_EQ))
       node = new_node(ND_EQ, node, relational());
-    else if (consume(ND_NE))
+    else if (consume(TK_NE))
       node = new_node(ND_NE, node, relational());
     else 
       return node;
@@ -45,13 +79,13 @@ Node *relational() {
   Node *node = add();
 
   for (;;) {
-    if (consume(ND_GE))
+    if (consume(TK_GE))
       node = new_node(ND_GE, node, add());
-    else if (consume(ND_LE))
+    else if (consume(TK_LE))
       node = new_node(ND_LE, node, add());
-    else if (consume(ND_GT))
+    else if (consume(TK_GT))
       node = new_node(ND_GT, node, add());
-    else if (consume(ND_LT))
+    else if (consume(TK_LT))
       node = new_node(ND_LT, node, add());
     else
       return node;
@@ -106,19 +140,53 @@ Node *term() {
     return node;
   }
 
-  if (token->ty == ND_NUM) {
+  if (token->ty == TK_NUM) {
     token = tokens->data[pos++];
     return new_node_num(token->val);
   }
+
+  if (token->ty == TK_INDENT) {
+    token = tokens->data[pos++];
+    return new_node_indent(token->val);
+  }
   token = tokens->data[pos++];
-  error_at(token->input, "invalid tokens");
+  printf("(char)%c (int)%d\n", token->ty, token->ty);
+  error_at(token->input, "invalid token");
 }
 
+void gen_lval(Node *node) {
+  if (node->ty != ND_INDENT) {
+    error("left hand side value is not valiable.");
+  }
+  int offset = ('z' - node->name + 1) * 8; 
+  printf("  mov rax, rbp\n");
+  printf("  sub rax, %d\n", offset);
+  printf("  push rax\n");
+}
 
 // generate assembly
 void gen(Node *node) {
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
+    return;
+  }
+
+  if (node->ty == ND_INDENT) {
+    gen_lval(node);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == '=') {
+    gen_lval(node->lhs);
+    gen(node->rhs);
+
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    printf("  mov [rax], rdi\n");
+    printf("  push rdi\n");
     return;
   }
 

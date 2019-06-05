@@ -7,14 +7,22 @@
 // save tokens at [tokens]
 void tokenize(char *p) {
   while (*p) {
-    Token *token = malloc(sizeof(Token));
-
     if (isspace(*p)) {
       p++;
       continue;
     }
 
-    if (strchr("+-*/>=<()!", *p)) {
+    Token *token = malloc(sizeof(Token));
+
+    if ('a' <= *p && *p <= 'z') {
+      token->ty = TK_INDENT;
+      token->input = p;
+      vec_push(tokens, token);
+      p++;
+      continue;
+    }
+
+    if (strchr("+-*/>=<()!;", *p)) {
       if ((*p == '=' || *p == '!') && *(p + 1) == '=') {
         if (*p == '=') {
           token->ty = ND_EQ;
@@ -58,7 +66,7 @@ void tokenize(char *p) {
     }
 
     if (isdigit(*p)) {
-      token->ty = ND_NUM;
+      token->ty = TK_NUM;
       token->input = p;
       token->val = strtol(p, &p, 10);
       vec_push(tokens, token);
@@ -69,6 +77,7 @@ void tokenize(char *p) {
   }
 
   Token *token = malloc(sizeof(Token));
+  token->ty = TK_EOF;
   token->input = p;
   vec_push(tokens, token);
 }
