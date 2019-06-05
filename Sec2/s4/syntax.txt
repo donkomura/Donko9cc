@@ -1,0 +1,3 @@
+expr = mul ("+" mul | "-" mul)*
+mul  = term ("*" term | "/" term)*
+term = num | "(" expr ")
