@@ -16,6 +16,8 @@ try() {
   fi 
 }
 
-try 3 "return 3;"
+try 7 "a = 4; b = 3; return (a + b);"
+try 4 "return 8 / 2;"
+try 25 "a = 3; b = 5 * 6 - 8; return a + b;"
 
 echo ok

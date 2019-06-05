@@ -20,6 +20,7 @@ void tokenize(char *p) {
 
     if ('a' <= *p && *p <= 'z') {
       token->ty = TK_INDENT;
+      token->name = *p;
       token->input = p;
       vec_push(tokens, token);
       p++;

@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
   // epilogue
   printf("  mov rsp, rbp\n");
-  printf("  pop rax\n");
+  printf("  pop rbp\n");
   printf("  ret\n");
   return 0;
 }

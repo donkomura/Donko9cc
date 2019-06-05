@@ -33,8 +33,9 @@ enum {
 
 typedef struct {
   int ty;       // token type
-  int val;      // ty == ND_NUM
+  int val;      // Numeric token
   char *input;  // error point (for error message)
+  char name;    // variable name
 } Token;
 
 // tokenize input expression

@@ -45,7 +45,6 @@ void program() {
 
 Node *stmt() {
   Node *node;
-  Token *token = tokens->data[pos];
   if (consume(TK_RETURN)) {
     node = malloc(sizeof(node));
     node->ty = ND_RETURN;
@@ -54,6 +53,7 @@ Node *stmt() {
     node = expr();
   }
 
+  Token *token = tokens->data[pos];
   if (!consume(';'))
     error_at(token->input, "This token may be ';'");
   return node;
@@ -155,7 +155,7 @@ Node *term() {
 
   if (token->ty == TK_INDENT) {
     token = tokens->data[pos++];
-    return new_node_indent(token->val);
+    return new_node_indent(token->name);
   }
   token = tokens->data[pos++];
   printf("(char)%c (int)%d\n", token->ty, token->ty);
@@ -226,6 +226,7 @@ void gen(Node *node) {
     case '/':
       printf("  cqo\n");
       printf("  idiv rdi\n");
+      break;
     case ND_EQ:
       printf("  cmp rax, rdi\n");
       printf("  sete al\n");
