@@ -15,7 +15,7 @@ jobs:
   compile:
     parallelism: 2
     docker:
-      - image: gcc:8.2
+      - image: gcc:5.2
     steps:
       - checkout
       #split all c files based on the index ID we're running on, pass subset to gcc compile
@@ -29,7 +29,7 @@ jobs:
 
   link:
     docker:
-      - image: gcc:8.2
+      - image: gcc:5.2
     steps:
       # instead of checking out, restore workspace (will merge all parallel containers from previous job)
       - attach_workspace:

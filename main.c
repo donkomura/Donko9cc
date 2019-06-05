@@ -1,11 +1,5 @@
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "9cc.h"
 
-Vector *tokens;
-Vector *code;
 char *user_input;
 int pos = 0, code_pos = 0;
 

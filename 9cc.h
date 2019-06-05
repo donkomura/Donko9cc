@@ -35,6 +35,9 @@ typedef struct {
   char *input;  // error point (for error message)
 } Token;
 
+// tokenize input expression
+void tokenize(char *p);
+
 typedef struct Node {
   int ty;           // node type from token type
   struct Node *lhs; // left hand side node
@@ -43,45 +46,43 @@ typedef struct Node {
   char name;        // use in case ty == ND_INDNET
 } Node;
 
+Node *new_node(int ty, Node *lhs, Node *rhs);
+Node *new_node_num(int ty);
+Node *new_node_indent(int ty);
+int consume(int ty);
+
+// generate assembly functions
+// details: syntax.txt
+void program();
+Node *stmt();
+Node *assign();
+Node *expr();
+Node *equality();
+Node *relational();
+Node *add();
+Node *mul();
+Node *unary();
+Node *term();
+void gen_lval(Node *node);
+void gen(Node *node); // generate assembly
+
 typedef struct {
   void **data;
   int capacity;  // buffer allocated area
   int len;       // elements count
 } Vector;
 
-// generate assembly functions
-// details: syntax.txt
-extern void program();
-extern Node *stmt();
-extern Node *assign();
-extern Node *expr();
-extern Node *equality();
-extern Node *relational();
-extern Node *add();
-extern Node *mul();
-extern Node *unary();
-extern Node *term();
-void gen_lval(Node *node);
-extern void gen(Node *node); // generate assembly
-
-extern Vector *new_vector(); // create new vector
-extern void vec_push(Vector *vec, void *elem); // push back in vector
+Vector *new_vector(); // create new vector
+void vec_push(Vector *vec, void *elem); // push back in vector
 
 // error functions
-extern void error(char *fmt, ...); // error output
-extern void error_at(char *loc, char *msg); // error output with error point in input expression
+void error(char *fmt, ...); // error output
+void error_at(char *loc, char *msg); // error output with error point in input expression
 
 // test function
-extern int expect(int line, int expected, int actual);
-extern void runtest();
+int expect(int line, int expected, int actual);
+void runtest();
 
-// tokenize input expression
-extern void tokenize(char *p);
-extern Node *new_node(int ty, Node *lhs, Node *rhs);
-extern Node *new_node_num(int ty);
-extern Node *new_node_indent(int ty);
-extern int consume(int ty);
-
-extern Vector *tokens;
-extern Vector *code;
-extern int pos, code_pos;
+Vector *tokens;
+Vector *code;
+int pos, code_pos;
