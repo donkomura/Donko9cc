@@ -85,5 +85,3 @@ extern int consume(int ty);
 extern Vector *tokens;
 extern Vector *code;
 extern int pos, code_pos;
-
-

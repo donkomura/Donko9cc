@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/donkomura/Donko9cc.svg?style=svg)](https://circleci.com/gh/donkomura/Donko9cc)
+
 # 9cc
 
 a small C compiler 
