@@ -11,6 +11,13 @@ void tokenize(char *p) {
 
     Token *token = malloc(sizeof(Token));
 
+    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+      token->ty = TK_RETURN;
+      token->input = p;
+      p += 6;
+      continue;
+    }
+
     if ('a' <= *p && *p <= 'z') {
       token->ty = TK_INDENT;
       token->input = p;

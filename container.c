@@ -62,3 +62,11 @@ void vec_push(Vector *vec, void *elem) {
   }
   vec->data[vec->len++] = elem;
 }
+
+// verify a charactar: number, alphabet, '_'
+int is_alnum(char c) {
+  return ('a' <= c && c <= 'z') ||
+         ('A' <= c && c <= 'Z') ||
+         ('0' <= c && c <= '9') ||
+         (c == '_');
+}

@@ -15,7 +15,8 @@ enum {
   TK_LE,        // <=
   TK_GE,        // >=
   TK_LT,        // <
-  TK_GT         // >
+  TK_GT,        // >
+  TK_RETURN     // return token
 };
 
 enum {
@@ -26,7 +27,8 @@ enum {
   ND_LE,        // <=
   ND_GE,        // >=
   ND_LT,        // <
-  ND_GT         // >
+  ND_GT,        // >
+  ND_RETURN     // return statement
 };
 
 typedef struct {
@@ -37,6 +39,7 @@ typedef struct {
 
 // tokenize input expression
 void tokenize(char *p);
+int is_alnum(char c);
 
 typedef struct Node {
   int ty;           // node type from token type

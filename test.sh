@@ -16,6 +16,6 @@ try() {
   fi 
 }
 
-try 2 "2 ;"
+try 3 "return 3;"
 
 echo ok

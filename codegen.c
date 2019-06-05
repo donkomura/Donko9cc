@@ -44,8 +44,16 @@ void program() {
 }
 
 Node *stmt() {
-  Node *node = expr();
+  Node *node;
   Token *token = tokens->data[pos];
+  if (consume(TK_RETURN)) {
+    node = malloc(sizeof(node));
+    node->ty = ND_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
+
   if (!consume(';'))
     error_at(token->input, "This token may be ';'");
   return node;
@@ -176,6 +184,15 @@ void gen(Node *node) {
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");
     printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == ND_RETURN) {
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  mov rsp, rbp\n");
+    printf("  pop rbp\n");
+    printf("  ret\n");
     return;
   }
 
