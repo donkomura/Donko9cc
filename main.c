@@ -1,11 +1,5 @@
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "9cc.h"
 
-Vector *tokens;
-Vector *code;
 char *user_input;
 int pos = 0, code_pos = 0;
 
@@ -22,6 +16,7 @@ int main(int argc, char **argv) {
 
   tokens = new_vector();
   code = new_vector();
+  map = new_map();
 
   user_input = argv[1];
   
@@ -47,7 +42,7 @@ int main(int argc, char **argv) {
 
   // epilogue
   printf("  mov rsp, rbp\n");
-  printf("  pop rax\n");
+  printf("  pop rbp\n");
   printf("  ret\n");
   return 0;
 }

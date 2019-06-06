@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "9cc.h"
 
 // split token
@@ -14,11 +11,21 @@ void tokenize(char *p) {
 
     Token *token = malloc(sizeof(Token));
 
-    if ('a' <= *p && *p <= 'z') {
-      token->ty = TK_INDENT;
+    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+      token->ty = TK_RETURN;
+      token->input = p;
+      p += 6;
+      continue;
+    }
+
+    if (('A' <= *p && *p <= 'Z') || (*p == '_') || ('a' <= *p && *p <= 'z')) {
+      int cnt = 1;
+      while (isalpha(p[cnt]) || isdigit(p[cnt]) || p[cnt] == '_') cnt++;
+      token->ty = TK_IDENT;
+      token->name = strndup(p, cnt);
       token->input = p;
       vec_push(tokens, token);
-      p++;
+      p += cnt;
       continue;
     }
 

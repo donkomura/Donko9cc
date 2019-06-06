@@ -8,40 +8,67 @@
 
 enum {
   TK_NUM = 256, // numeric token
-  TK_INDENT,    // operator token
+  TK_IDENT,    // operator token
   TK_EOF,       // end token
   TK_EQ,        // ==
   TK_NE,        // != 
   TK_LE,        // <=
   TK_GE,        // >=
   TK_LT,        // <
-  TK_GT         // >
+  TK_GT,        // >
+  TK_RETURN     // return token
 };
 
 enum {
   ND_NUM = 256, // node type of numeric
-  ND_INDENT,    // node type of operator
+  ND_IDENT,    // node type of operator
   ND_EQ,        // ==
   ND_NE,        // != 
   ND_LE,        // <=
   ND_GE,        // >=
   ND_LT,        // <
-  ND_GT         // >
+  ND_GT,        // >
+  ND_RETURN     // return statement
 };
 
 typedef struct {
   int ty;       // token type
-  int val;      // ty == ND_NUM
+  int val;      // Numeric token
   char *input;  // error point (for error message)
+  char *name;   // variable name
 } Token;
+
+// tokenize input expression
+void tokenize(char *p);
+int is_alnum(char c);
 
 typedef struct Node {
   int ty;           // node type from token type
   struct Node *lhs; // left hand side node
   struct Node *rhs; // right hand side node
   int val;          // the value of this node (ND_NUM)
-  char name;        // use in case ty == ND_INDNET
+  char *name;        // use in case ty == ND_INDNET
 } Node;
+
+Node *new_node(int ty, Node *lhs, Node *rhs);
+Node *new_node_num(int ty);
+Node *new_node_indent(char *name);
+int consume(int ty);
+
+// generate assembly functions
+// details: syntax.txt
+void program();
+Node *stmt();
+Node *assign();
+Node *expr();
+Node *equality();
+Node *relational();
+Node *add();
+Node *mul();
+Node *unary();
+Node *term();
+void gen_lval(Node *node);
+void gen(Node *node); // generate assembly
 
 typedef struct {
   void **data;
@@ -49,41 +76,29 @@ typedef struct {
   int len;       // elements count
 } Vector;
 
-// generate assembly functions
-// details: syntax.txt
-extern void program();
-extern Node *stmt();
-extern Node *assign();
-extern Node *expr();
-extern Node *equality();
-extern Node *relational();
-extern Node *add();
-extern Node *mul();
-extern Node *unary();
-extern Node *term();
-void gen_lval(Node *node);
-extern void gen(Node *node); // generate assembly
+Vector *new_vector(); // create new vector
+void vec_push(Vector *vec, void *elem); // push back in vector
 
-extern Vector *new_vector(); // create new vector
-extern void vec_push(Vector *vec, void *elem); // push back in vector
+typedef struct {
+  Vector *keys;
+  Vector *vals;
+} Map;
+
+Map *new_map();
+void map_set(Map *map, char *key, void *val);
+void *map_get(Map *map, char *key);
 
 // error functions
-extern void error(char *fmt, ...); // error output
-extern void error_at(char *loc, char *msg); // error output with error point in input expression
+void error(char *fmt, ...); // error output
+void error_at(char *loc, char *msg); // error output with error point in input expression
 
 // test function
-extern int expect(int line, int expected, int actual);
-extern void runtest();
+int expect(int line, int expected, int actual);
+void runtest();
+void test_vector();
+void test_map();
 
-// tokenize input expression
-extern void tokenize(char *p);
-extern Node *new_node(int ty, Node *lhs, Node *rhs);
-extern Node *new_node_num(int ty);
-extern Node *new_node_indent(int ty);
-extern int consume(int ty);
-
-extern Vector *tokens;
-extern Vector *code;
-extern int pos, code_pos;
-
-
+Vector *tokens;
+Vector *code;
+Map *map;
+int pos, code_pos, offset_count;
