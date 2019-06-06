@@ -1,9 +1,16 @@
 #include "9cc.h"
 
-char *gen_label() {
+char *gen_label(char* type) {
   static int n;
+  static int begin;
+  static int end;
   char buff[10];
-  sprintf(buff, ".L%d", n++);
+  if (strcmp(type, "begin") == 0)
+    sprintf(buff, ".LB%d", begin++);
+  else if (strcmp(type, "end") == 0) 
+    sprintf(buff, ".LE%d", end++);
+  else if (strcmp(type, "if") == 0)
+    sprintf(buff, ".L%d", n++);
   return strdup(buff);
 }
 
@@ -20,7 +27,6 @@ void gen_lval(Node *node) {
 
 // generate assembly
 void gen(Node *node) {
-  char *ret = gen_label();
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
     return;
@@ -35,14 +41,52 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_IF) {
+    char *ifLabel = gen_label("if");
     gen(node->cond);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je  %s\n", ret);
+    printf("  je  %s\n", ifLabel);
 
     gen(node->then);
 
-    printf("%s:\n", ret);
+    printf("%s:\n", ifLabel);
+    return;
+  }
+
+  if (node->ty == ND_WHILE) {
+    char *beginLabel = gen_label("begin");
+    char *endLabel = gen_label("end");
+    printf("%s:", beginLabel);
+    gen(node->cond);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je  %s\n", endLabel);
+    
+    gen(node->body);
+
+    printf("  jmp %s\n", beginLabel);
+    printf("%s:\n", endLabel);
+    return;
+  }
+
+  if (node->ty == ND_FOR) {
+    char *beginLabel = gen_label("begin");
+    char *endLabel = gen_label("end");
+    gen(node->init);
+
+    printf("%s:\n", beginLabel);
+
+    gen(node->cond);
+
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je %s\n", endLabel);
+
+    gen(node->body);
+    gen(node->inc);
+
+    printf("  jmp %s\n", beginLabel);
+    printf("%s:\n", endLabel);
     return;
   }
 

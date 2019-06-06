@@ -62,6 +62,13 @@ typedef struct Node {
   struct Node *cond;
   struct Node *then;
   struct Node *els;
+
+  // "while" ( cond ) body
+  struct Node *body;
+
+  // "for" ( init; cond; inc ) body
+  struct Node *init;
+  struct Node *inc;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
