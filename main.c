@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   map = new_map();
 
   user_input = argv[1];
-  
+
   // tokenize
   tokenize(argv[1]);
   // store in `code`

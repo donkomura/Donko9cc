@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define STR(var) #var
+
 enum {
   TK_NUM = 256, // numeric token
   TK_IDENT,    // operator token
@@ -16,7 +18,11 @@ enum {
   TK_GE,        // >=
   TK_LT,        // <
   TK_GT,        // >
-  TK_RETURN     // return token
+  TK_RETURN,    // return
+  TK_IF,        // if 
+  TK_WHILE,     // while
+  TK_ELSE,      // else 
+  TK_FOR,       // for
 };
 
 enum {
@@ -28,7 +34,10 @@ enum {
   ND_GE,        // >=
   ND_LT,        // <
   ND_GT,        // >
-  ND_RETURN     // return statement
+  ND_RETURN,    // return statement
+  ND_IF,        // if statement
+  ND_WHILE,     // while statement
+  ND_FOR        // for statement
 };
 
 typedef struct {
@@ -47,7 +56,12 @@ typedef struct Node {
   struct Node *lhs; // left hand side node
   struct Node *rhs; // right hand side node
   int val;          // the value of this node (ND_NUM)
-  char *name;        // use in case ty == ND_INDNET
+  char *name;       // use in case ty == ND_INDNET
+  
+  // "if" ( cond ) then "else" els
+  struct Node *cond;
+  struct Node *then;
+  struct Node *els;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
@@ -78,6 +92,7 @@ typedef struct {
 
 Vector *new_vector(); // create new vector
 void vec_push(Vector *vec, void *elem); // push back in vector
+void show_vec(Vector *vec, char type);
 
 typedef struct {
   Vector *keys;
