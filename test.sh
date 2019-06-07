@@ -16,29 +16,14 @@ try() {
   fi 
 }
 
-try 1 "if (1) return 1; else return 0;"
-try 6 "
-atcoder = 2 * 3;
-atcodeer = 6; 
-if (atcoder == atcodeer) 
-  return atcoder; 
-else 
-  return 0;"
+try 32 "
+a = 5;
+x = 2;
+res = 1;
+for (i = 1; i <= a; i = i + 1) {
+  res = res * x;
+}
+return res;
+"
 
-try 5 "a=3; while(a > 0) a = a - 1; return a + 5;"
-try 1 "b = 0; for (a = 0; a < 5; a = a + 1) if (a > 3) b = b + 1; return b;"
-try 10 "
-cnt = 0;
-for (a = 0; a < 10; a = a + 1) {
-  cnt = cnt + 1; 
-}
-return cnt;
-"
-try 55 "
-a = 0;
-for (i = 1; i <= 10; i = i + 1) {
-  a = a + i; 
-}
-return a;
-"
 echo ok

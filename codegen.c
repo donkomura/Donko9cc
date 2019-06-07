@@ -36,6 +36,7 @@ void gen(Node *node) {
     Vector *vec = node->block;
     for (int i = 0; i < vec->len; i++) {
       gen(vec->data[i]);
+      printf("  pop rax\n");
     }
     return;
   }
