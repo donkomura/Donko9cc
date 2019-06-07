@@ -1,166 +1,17 @@
 #include "9cc.h"
 
-Node *new_node(int ty, Node *lhs, Node *rhs) {
-  Node *node = malloc(sizeof(Node));
-  node->ty = ty;
-  node->lhs = lhs;
-  node->rhs = rhs;
-  return node;
-}
-
-Node *new_node_num(int ty) {
-  Node *node = malloc(sizeof(Node));
-  node->ty = ND_NUM;
-  node->val = ty;
-  return node;
-}
-
-Node *new_node_indent(char *name) {
-  Node *node = malloc(sizeof(Node));
-  node->ty = ND_IDENT;
-  node->name = name;
-  map_set(map, name, (void *)offset_count++); 
-  return node;
-}
-
-int consume(int ty) {
-  Token *token = tokens->data[pos]; 
-  if (token->ty != ty)
-    return 0;
-  pos++;
-  return 1;
-}
-
-// parser abstract syntax tree
-void program() {
-  Token *token = tokens->data[pos];
-  
-  if (token->ty == TK_EOF) 
-    return; 
-  Node *node = stmt();
-  vec_push(code, node);
-  code_pos++;
-  code->data[code_pos] = NULL;
-  return program();
-}
-
-Node *stmt() {
-  Node *node;
-  if (consume(TK_RETURN)) {
-    node = malloc(sizeof(node));
-    node->ty = ND_RETURN;
-    node->lhs = expr();
-  } else {
-    node = expr();
-  }
-
-  Token *token = tokens->data[pos];
-  if (!consume(';'))
-    error_at(token->input, "This token may be ';'");
-  return node;
-}
-
-Node *expr() {
-  return assign();
-}
-
-Node *assign() {
-  Node *node = equality();
-  if (consume('='))
-    node = new_node('=', node, assign());
-  return node;
-}
-
-Node *equality() {
-  Node *node = relational();
-
-  for (;;) {
-    if (consume(TK_EQ))
-      node = new_node(ND_EQ, node, relational());
-    else if (consume(TK_NE))
-      node = new_node(ND_NE, node, relational());
-    else 
-      return node;
-  }
-}
-
-Node *relational() {
-  Node *node = add();
-
-  for (;;) {
-    if (consume(TK_GE))
-      node = new_node(ND_GE, node, add());
-    else if (consume(TK_LE))
-      node = new_node(ND_LE, node, add());
-    else if (consume(TK_GT))
-      node = new_node(ND_GT, node, add());
-    else if (consume(TK_LT))
-      node = new_node(ND_LT, node, add());
-    else
-      return node;
-  }
-}
-
-Node *add() {
-  Node *node = mul();
-
-  for (;;) {
-    if (consume('+'))
-      node = new_node('+', node, mul());
-    else if (consume('-'))
-      node = new_node('-', node, mul());
-    else
-      return node;
-  }
-}
-
-Node *mul() {
-  Node *node = unary();
-
-  for (;;) {
-    if (consume('*')) 
-      node = new_node('*', node, unary());
-    else if (consume('/'))
-      node = new_node('/', node, unary());
-    else
-      return node;
-  }
-}
-
-Node *unary() {
-  for (;;) {
-    if (consume('+')) {
-      return term();
-    }
-    if (consume('-')) {
-      return new_node('-', new_node_num(0), term());
-    }
-    return term();       // 単項演算子なし
-  }
-}
-
-Node *term() {
-  Token *token = tokens->data[pos];
-  if (consume('(')) {
-    Node *node = expr();
-    if (!consume(')')) {
-      error_at(token->input, "invalid syntax: no ')'");
-    }
-    return node;
-  }
-
-  if (token->ty == TK_NUM) {
-    token = tokens->data[pos++];
-    return new_node_num(token->val);
-  }
-
-  if (token->ty == TK_IDENT) {
-    token = tokens->data[pos++];
-    return new_node_indent(token->name);
-  }
-  token = tokens->data[pos++];
-  printf("(char)%c (int)%d\n", token->ty, token->ty);
-  error_at(token->input, "invalid token");
+char *gen_label(char* type) {
+  static int n;
+  static int begin;
+  static int end;
+  char buff[10];
+  if (strcmp(type, "begin") == 0)
+    sprintf(buff, ".LB%d", begin++);
+  else if (strcmp(type, "end") == 0) 
+    sprintf(buff, ".LE%d", end++);
+  else if (strcmp(type, "if") == 0)
+    sprintf(buff, ".L%d", n++);
+  return strdup(buff);
 }
 
 void gen_lval(Node *node) {
@@ -171,6 +22,7 @@ void gen_lval(Node *node) {
   printf("  mov rax, rbp\n");
   printf("  sub rax, %d\n", offset);
   printf("  push rax\n");
+  return;
 }
 
 // generate assembly
@@ -180,11 +32,69 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == ND_BLOCK) {
+    Vector *vec = node->block;
+    for (int i = 0; i < vec->len; i++) {
+      gen(vec->data[i]);
+    }
+    return;
+  }
+
   if (node->ty == ND_IDENT) {
     gen_lval(node);
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");
     printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == ND_IF) {
+    char *ifLabel = gen_label("if");
+    gen(node->cond);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je  %s\n", ifLabel);
+
+    gen(node->then);
+
+    printf("%s:\n", ifLabel);
+    return;
+  }
+
+  if (node->ty == ND_WHILE) {
+    char *beginLabel = gen_label("begin");
+    char *endLabel = gen_label("end");
+    printf("%s:", beginLabel);
+    gen(node->cond);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je  %s\n", endLabel);
+    
+    gen(node->body);
+
+    printf("  jmp %s\n", beginLabel);
+    printf("%s:\n", endLabel);
+    return;
+  }
+
+  if (node->ty == ND_FOR) {
+    char *beginLabel = gen_label("begin");
+    char *endLabel = gen_label("end");
+    gen(node->init);
+
+    printf("%s:\n", beginLabel);
+
+    gen(node->cond);
+
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je %s\n", endLabel);
+
+    gen(node->body);
+    gen(node->inc);
+
+    printf("  jmp %s\n", beginLabel);
+    printf("%s:\n", endLabel);
     return;
   }
 
@@ -257,6 +167,7 @@ void gen(Node *node) {
       printf("  cmp rdi, rax\n");
       printf("  setl al\n");
       printf("  movzb rax, al\n");
+      break;
   }
   printf("  push rax\n");
 }

@@ -1,7 +1,6 @@
 #include "9cc.h"
 
 char *user_input;
-int pos = 0, code_pos = 0;
 
 int main(int argc, char **argv) {
   if (argc!= 2) {
@@ -19,7 +18,7 @@ int main(int argc, char **argv) {
   map = new_map();
 
   user_input = argv[1];
-  
+
   // tokenize
   tokenize(argv[1]);
   // store in `code`

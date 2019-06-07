@@ -83,6 +83,18 @@ void vec_push(Vector *vec, void *elem) {
   vec->data[vec->len++] = elem;
 }
 
+// show vector elements
+void show_vec(Vector *vec, char type) {
+  for (int i = 0; i < vec->len; i++) {
+    if (type == 's') {
+      fprintf(stdout, "%s", (char *)vec->data[i]);
+    } else if (type == 'c') {
+    } else if (type == 'd') {
+    }
+  }
+  printf("\n");
+}
+
 // verify a charactar: number, alphabet, '_'
 int is_alnum(char c) {
   return ('a' <= c && c <= 'z') ||
