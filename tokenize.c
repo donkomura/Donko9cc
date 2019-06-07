@@ -62,7 +62,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (strchr("+-*/>=<()!;", *p)) {
+    if (strchr("+-*/>=<()!;{}", *p)) {
       if ((*p == '=' || *p == '!') && *(p + 1) == '=') {
         if (*p == '=') {
           token->ty = TK_EQ;

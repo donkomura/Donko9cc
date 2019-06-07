@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+static int blockCount;
+
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
   node->ty = ty;
@@ -19,7 +21,7 @@ Node *new_node_indent(char *name) {
   Node *node = malloc(sizeof(Node));
   node->ty = ND_IDENT;
   node->name = name;
-  map_set(map, name, (void *)offset_count++); 
+  map_set(map, name, offset_count++); 
   return node;
 }
 
@@ -47,6 +49,19 @@ void program() {
 Node *stmt() {
   Token *token = tokens->data[pos];
   Node *node;
+
+  if (consume('{')) {
+    node = malloc(sizeof(Node));
+    node->ty = ND_BLOCK;
+    Vector *vec = new_vector();
+    while (!consume('}')) {
+      vec_push(vec, stmt());
+      vec->data[++blockCount] = NULL;
+    }
+    node->block = (__typeof__(node->block))vec;
+    return node;
+  }
+
   if (consume(TK_IF)) {
     node = malloc(sizeof(Node));
     node->ty = ND_IF;
@@ -102,7 +117,6 @@ Node *stmt() {
   }
 
   if (consume(TK_RETURN)) {
-    printf("token: %c", *(token->input));
     node = malloc(sizeof(Node));
     node->ty = ND_RETURN;
     node->lhs = expr();

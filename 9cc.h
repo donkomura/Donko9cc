@@ -1,11 +1,13 @@
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdarg.h>
+#define _GNU_SOURCE
+#include <assert.h>
 #include <ctype.h>
-#include <string.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
-
+#include <stdnoreturn.h>
+#include <string.h>
 #define STR(var) #var
 
 enum {
@@ -37,8 +39,19 @@ enum {
   ND_RETURN,    // return statement
   ND_IF,        // if statement
   ND_WHILE,     // while statement
-  ND_FOR        // for statement
+  ND_FOR,       // for statement
+  ND_BLOCK      // block
 };
+
+typedef struct {
+  void **data;
+  int capacity;  // buffer allocated area
+  int len;       // elements count
+} Vector;
+
+Vector *new_vector(void); // create new vector
+void vec_push(Vector *vec, void *elem); // push back in vector
+void show_vec(Vector *vec, char type);
 
 typedef struct {
   int ty;       // token type
@@ -57,7 +70,7 @@ typedef struct Node {
   struct Node *rhs; // right hand side node
   int val;          // the value of this node (ND_NUM)
   char *name;       // use in case ty == ND_INDNET
-  
+
   // "if" ( cond ) then "else" els
   struct Node *cond;
   struct Node *then;
@@ -69,6 +82,9 @@ typedef struct Node {
   // "for" ( init; cond; inc ) body
   struct Node *init;
   struct Node *inc;
+
+  // "{" block "}"
+  struct Vector *block;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
@@ -90,16 +106,6 @@ Node *unary();
 Node *term();
 void gen_lval(Node *node);
 void gen(Node *node); // generate assembly
-
-typedef struct {
-  void **data;
-  int capacity;  // buffer allocated area
-  int len;       // elements count
-} Vector;
-
-Vector *new_vector(); // create new vector
-void vec_push(Vector *vec, void *elem); // push back in vector
-void show_vec(Vector *vec, char type);
 
 typedef struct {
   Vector *keys;

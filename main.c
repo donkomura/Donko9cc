@@ -1,7 +1,6 @@
 #include "9cc.h"
 
 char *user_input;
-int pos = 0, code_pos = 0;
 
 int main(int argc, char **argv) {
   if (argc!= 2) {

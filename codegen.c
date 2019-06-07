@@ -32,6 +32,14 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == ND_BLOCK) {
+    Vector *vec = node->block;
+    for (int i = 0; i < vec->len; i++) {
+      gen(vec->data[i]);
+    }
+    return;
+  }
+
   if (node->ty == ND_IDENT) {
     gen_lval(node);
     printf("  pop rax\n");
