@@ -9,7 +9,8 @@ $(OBJS): 9cc.h
 
 test: 9cc
 	./9cc -test
-	./test.sh
+#	./test.sh
+	./func_test.sh
 
 clean: 
 	rm -f 9cc *.o *~ tmp* a.out

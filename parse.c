@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 static int blockCount;
+static int funcCount;
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
@@ -210,14 +211,6 @@ Node *unary() {
 
 Node *term() {
   Token *token = tokens->data[pos];
-  if (consume('(')) {
-    Node *node = expr();
-    if (!consume(')')) {
-      error_at(token->input, "invalid syntax: no ')'");
-    }
-    return node;
-  }
-
   if (token->ty == TK_NUM) {
     token = tokens->data[pos++];
     return new_node_num(token->val);
@@ -225,10 +218,27 @@ Node *term() {
 
   if (token->ty == TK_IDENT) {
     token = tokens->data[pos++];
+    Node *node;
+    if (consume('(')) {
+      if (consume(')')) {
+        node = malloc(sizeof(Node));
+        node->name = token->name;
+        node->ty = ND_FUNC;
+        return node;
+      }
+      error_at(token->input, "expected ')'");
+    }
     return new_node_indent(token->name);
   }
+
+  if (consume('(')) {
+    Node *node = expr();
+    if (!consume(')')) {
+      error_at(token->input, "invalid syntax: no ')'");
+    }
+    return node;
+  }
+    
   token = tokens->data[pos++];
   error_at(token->input, "invalid token");
 }
-
-

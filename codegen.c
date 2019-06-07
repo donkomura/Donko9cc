@@ -32,6 +32,11 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == ND_FUNC) {
+    printf("  call %s\n", node->name);
+    return;
+  }
+
   if (node->ty == ND_BLOCK) {
     Vector *vec = node->block;
     for (int i = 0; i < vec->len; i++) {

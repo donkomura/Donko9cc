@@ -40,7 +40,8 @@ enum {
   ND_IF,        // if statement
   ND_WHILE,     // while statement
   ND_FOR,       // for statement
-  ND_BLOCK      // block
+  ND_BLOCK,     // block
+  ND_FUNC       // function
 };
 
 typedef struct {
