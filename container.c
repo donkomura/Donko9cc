@@ -83,6 +83,9 @@ void vec_push(Vector *vec, void *elem) {
   vec->data[vec->len++] = elem;
 }
 
+void vec_pushi(Vector *v, int val) {
+  vec_push(v, (void *)(intptr_t)val);
+}
 // show vector elements
 void show_vec(Vector *vec, char type) {
   for (int i = 0; i < vec->len; i++) {

@@ -1,2 +1,2 @@
 #include <stdio.h>
-void foo() { printf("tapu!\n"); }
+int foo(int x, int y) { printf("%d\n", x + y); }

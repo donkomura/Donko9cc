@@ -53,6 +53,7 @@ typedef struct {
 Vector *new_vector(void); // create new vector
 void vec_push(Vector *vec, void *elem); // push back in vector
 void show_vec(Vector *vec, char type);
+void vec_pushi(Vector *v, int val);
 
 typedef struct {
   int ty;       // token type
@@ -86,6 +87,9 @@ typedef struct Node {
 
   // "{" block "}"
   struct Vector *block;
+
+  // function args
+  struct Vector *args;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);

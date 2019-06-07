@@ -62,7 +62,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (strchr("+-*/>=<()!;{}", *p)) {
+    if (strchr("+-*/>=<()!;{},", *p)) {
       if ((*p == '=' || *p == '!') && *(p + 1) == '=') {
         if (*p == '=') {
           token->ty = TK_EQ;
@@ -95,6 +95,7 @@ void tokenize(char *p) {
         }
         token->input = p;
         vec_push(tokens, token);
+        p++;
         continue;
       }
 
@@ -108,8 +109,9 @@ void tokenize(char *p) {
     if (isdigit(*p)) {
       token->ty = TK_NUM;
       token->input = p;
-      token->val = strtol(p, &p, 10);
+      token->val = atoi(p);
       vec_push(tokens, token);
+      p++;
       continue;
     }
 

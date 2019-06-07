@@ -1,7 +1,7 @@
 #include "9cc.h"
 
 static int blockCount;
-static int funcCount;
+static int argCount;
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
@@ -11,10 +11,10 @@ Node *new_node(int ty, Node *lhs, Node *rhs) {
   return node;
 }
 
-Node *new_node_num(int ty) {
+Node *new_node_num(int num) {
   Node *node = malloc(sizeof(Node));
   node->ty = ND_NUM;
-  node->val = ty;
+  node->val = num;
   return node;
 }
 
@@ -205,30 +205,34 @@ Node *unary() {
     if (consume('-')) {
       return new_node('-', new_node_num(0), term());
     }
-    return term();       // 単項演算子なし
+    return term();
   }
 }
 
 Node *term() {
   Token *token = tokens->data[pos];
-  if (token->ty == TK_NUM) {
-    token = tokens->data[pos++];
-    return new_node_num(token->val);
+  if (consume(TK_IDENT)) {
+    Node *node = malloc(sizeof(Node));
+    node->name = token->name;
+    if (consume('(')) {
+      node->ty = ND_FUNC;
+      Vector *vec = new_vector();
+      while (!consume(')')) {
+        token = tokens->data[pos];
+        if (consume(',')) continue;
+        if (consume(TK_NUM)) {
+          vec_pushi(vec, token->val);
+        }
+      }
+      node->args = (__typeof__(node->args))vec;
+      return node;
+    }
+    error_at(token->input, "expected ')'");
+    return new_node_indent(token->name);
   }
 
-  if (token->ty == TK_IDENT) {
-    token = tokens->data[pos++];
-    Node *node;
-    if (consume('(')) {
-      if (consume(')')) {
-        node = malloc(sizeof(Node));
-        node->name = token->name;
-        node->ty = ND_FUNC;
-        return node;
-      }
-      error_at(token->input, "expected ')'");
-    }
-    return new_node_indent(token->name);
+  if (consume(TK_NUM)) {
+    return new_node_num(token->val);
   }
 
   if (consume('(')) {
@@ -238,7 +242,7 @@ Node *term() {
     }
     return node;
   }
-    
+
   token = tokens->data[pos++];
   error_at(token->input, "invalid token");
 }

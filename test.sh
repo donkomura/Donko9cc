@@ -16,6 +16,6 @@ try() {
   fi 
 }
 
-try "uku" "foo();"
+try 3 "return 3;"
 
 echo ok

@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+char *regs[4] = { "rdi", "rsi", "rcx", "r8" };
+
 char *gen_label(char* type) {
   static int n;
   static int begin;
@@ -33,6 +35,11 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_FUNC) {
+    Vector *vec = node->args;
+    int cnt = 0;
+    for (int i = vec->len - 1; i >= 0; i--) {
+      printf("  mov %s, %d\n", regs[cnt++], vec->data[i]);
+    }
     printf("  call %s\n", node->name);
     return;
   }

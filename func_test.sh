@@ -4,13 +4,14 @@ try() {
   input="$2"
 
   ./9cc "$input" > tmp.s
-  cc -c -o tmp tmp.s
-  cc -c -o func_test ./sample/test.c
-  cc tmp func_test
+  gcc -c -o tmp tmp.s 
+  gcc -c -o func_test ./sample/test.c 
+  gcc tmp func_test
   FUNC_TEST_RESULT=`./a.out`
-  actual=$FUNC_TEST_RESULT
+  actual="$FUNC_TEST_RESULT"
   echo "./sample/test.c"
   cat ./sample/test.c
+  echo $?
 
   if [ "$actual" = "$expected" ]; then
     echo "$input => $actual"
@@ -20,6 +21,6 @@ try() {
   fi 
 }
 
-try "tapu!" "foo();"
+try "5" "return foo(2, 3);"
 
 echo ok
