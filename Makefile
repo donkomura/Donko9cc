@@ -3,7 +3,7 @@ SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
 9cc: $(OBJS)
-			$(CC) -o 9cc $(OBJS) $(LDFLAGS)
+	$(CC) -o 9cc $(OBJS) $(LDFLAGS)
 
 $(OBJS): 9cc.h
 
@@ -12,5 +12,5 @@ test: 9cc
 	./test.sh
 	./func_test.sh
 
-clean: 
+clean:
 	rm -f 9cc *.o *~ tmp* a.out func_test

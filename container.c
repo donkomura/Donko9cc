@@ -4,9 +4,9 @@ char *user_input;
 
 // test code for component functions --------------------------------
 int expect(int line, int expected, int actual) {
-  if (expected == actual) 
-    return;
-  fprintf(stderr, "%d: %d expected, but god %d\n", 
+  if (expected == actual)
+    return 0;
+  fprintf(stderr, "%d: %d expected, but god %d\n",
       line, expected, actual);
   exit(1);
 }
@@ -15,9 +15,9 @@ void test_vector() {
   Vector *vec = new_vector();
   expect(__LINE__, 0, vec->len);
 
-  for (int i = 0; i < 100; i++) 
+  for (int i = 0; i < 100; i++)
     vec_push(vec, (void *)i);
-  
+
   expect(__LINE__, 100, vec->len);
   expect(__LINE__, 0,   (long)vec->data[0]);
   expect(__LINE__, 50,  (long)vec->data[50]);
@@ -29,7 +29,7 @@ void test_vector() {
 void test_map() {
   Map *map = new_map();
   expect(__LINE__, 0, (long)map_get(map, "hoge"));
-  
+
   map_set(map, "hoge", (void *)2);
   expect(__LINE__, 2, (long)map_get(map, "hoge"));
 
@@ -65,7 +65,7 @@ void error_at(char *loc, char *msg) {
   exit(1);
 }
 
-// create new vector 
+// create new vector
 Vector *new_vector() {
   Vector *vec = malloc(sizeof(Vector));
   vec->data = malloc(sizeof(void *) * 16);

@@ -54,3 +54,6 @@ dkms.conf
 # additional
 9cc
 tmp*
+
+# intellij
+.idea
